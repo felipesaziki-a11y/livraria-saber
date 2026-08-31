@@ -1,0 +1,24 @@
+DROP DATABASE IF EXISTS livraria_saber;
+
+CREATE DATABASE livraria_saber;
+
+USE livraria_saber;
+
+CREATE TABLE generos(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(25) NOT NULL
+);
+
+CREATE TABLE livros(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(50) NOT NULL,
+    
+)
+
+CREATE TABLE clientes(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(20) NOT NULL,
+    sobrenome VARCHAR(20) NOT NULL,
+)
+
+CREATE TABLE
