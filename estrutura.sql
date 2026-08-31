@@ -47,6 +47,30 @@ JOIN generos ON livros.genero_id = generos.id;
 CREATE TABLE clientes(
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(20) NOT NULL,
-    sobrenome VARCHAR(20) NOT NULL,
+    idade INT NOT NULL,
+    sexo ENUM('F', 'M', 'NB') NOT NULL
 );
 
+INSERT INTO clientes (nome, idade, sexo) VALUE ('Pedro', 23, 'M')
+
+CREATE TABLE enderecos(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    rua VARCHAR(20),
+    bairro VARCHAR(25),
+    cidade VARCHAR(32),
+    estado VARCHAR(2),
+    cliente_id INT,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+
+INSERT INTO enderecos (rua, bairro, cidade, estado, cliente_id) VALUE ('José Lanznaster', 'Coloninha', 'Gaspar', 'SC', 1);
+
+SELECT 
+    enderecos.id,
+    enderecos.rua,
+    enderecos.bairro,
+    enderecos.cidade,
+    enderecos.estado,
+    clientes.nome AS 'nome do cliente'
+FROM enderecos
+JOIN clientes ON enderecos.cliente_id = clientes.id;
