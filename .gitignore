@@ -1,78 +1,32 @@
-# Byte-compiled / otimizado / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribuição / empacotamento
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Logs de instalação/build
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Relatórios de teste / cobertura
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Ambientes virtuais
+# Variáveis de ambiente
 .env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Variáveis de ambiente / segredos
 .env.local
 .env.*.local
-*.env
+.env.development
+.env.production
+.env.test
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Dependências
+node_modules/
+vendor/
+__pycache__/
+*.pyc
+venv/
+.venv/
 
-# IDEs / editores
+# Builds
+dist/
+build/
+out/
+*.egg-info/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs e editores
 .vscode/
 .idea/
 *.swp
@@ -82,24 +36,16 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
-# Django
-*.log
-local_settings.py
-db.sqlite3
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
 
-# Flask
-instance/
-.webassets-cache
+# Testes e cobertura
+coverage/
+.nyc_output/
 
-# Scrapy
-.scrapy
-
-# Sphinx
-docs/_build/
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# SageMath
-*.sage.py
+# Arquivos temporários
+*.tmp
+*.bak
