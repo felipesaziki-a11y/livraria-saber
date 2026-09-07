@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Livraria Saber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #1c2b24;
+    --ink-soft: #24382f;
+    --paper: #efe7d8;
+    --paper-light: #f7f2e7;
+    --gold: #c08a28;
+    --gold-dark: #96691c;
+    --rust: #8b4a3a;
+    --text: #241c15;
+    --text-soft: #5b5346;
+    --line: #d9cfb8;
+    --ok: #4a6b52;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html, body{
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+  }
+
+  h1, h2, h3{
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ink);
+  }
+
+  .app{
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    width: 230px;
+    flex-shrink: 0;
+    background: var(--ink);
+    color: var(--paper-light);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .brand{
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+    line-height: 1.15;
+    font-weight: 600;
+    color: var(--paper-light);
+    padding: 0 28px 28px 28px;
+    border-bottom: 1px solid rgba(239,231,216,0.15);
+    margin-bottom: 12px;
+  }
+
+  .brand span{
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin-top: 6px;
+  }
+
+  nav{
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+  }
+
+  nav button{
+    all: unset;
+    cursor: pointer;
+    padding: 13px 28px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: rgba(239,231,216,0.72);
+    border-left: 3px solid transparent;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  nav button:hover{
+    background: rgba(239,231,216,0.06);
+    color: var(--paper-light);
+  }
+
+  nav button.active{
+    background: rgba(192,138,40,0.14);
+    border-left-color: var(--gold);
+    color: var(--paper-light);
+    font-weight: 600;
+  }
+
+  .sidebar-footer{
+    margin-top: auto;
+    padding: 0 28px;
+    font-size: 0.75rem;
+    color: rgba(239,231,216,0.4);
+    line-height: 1.5;
+  }
+
+  /* ---------- MAIN ---------- */
+  main{
+    flex: 1;
+    padding: 48px 56px 64px 56px;
+    max-width: 1100px;
+  }
+
+  .tab{
+    display: none;
+    animation: fade 0.25s ease;
+  }
+
+  .tab.active{ display: block; }
+
+  @keyframes fade{
+    from{ opacity: 0; transform: translateY(4px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .eyebrow{
+    color: var(--gold-dark);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .page-title{
+    font-size: 2.1rem;
+    margin-bottom: 8px;
+  }
+
+  .page-lede{
+    color: var(--text-soft);
+    max-width: 60ch;
+    line-height: 1.55;
+    margin-bottom: 36px;
+  }
+
+  /* ---------- HOME ---------- */
+  .hero{
+    background: var(--ink);
+    color: var(--paper-light);
+    border-radius: 6px;
+    padding: 48px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after{
+    content: "";
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 220px;
+    height: 220px;
+    border: 1px solid rgba(192,138,40,0.25);
+    border-radius: 50%;
+  }
+
+  .hero h1{
+    color: var(--paper-light);
+    font-size: 2.6rem;
+    max-width: 14ch;
+    line-height: 1.1;
+  }
+
+  .hero p{
+    max-width: 46ch;
+    color: rgba(239,231,216,0.8);
+    line-height: 1.6;
+    margin-top: 16px;
+  }
+
+  .stats{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 44px;
+  }
+
+  .stat-card{
+    background: var(--paper-light);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px 20px;
+  }
+
+  .stat-number{
+    font-family: 'Fraunces', serif;
+    font-size: 2.2rem;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .stat-label{
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+  }
+
+  .shelf{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .shelf-card{
+    border: 1px solid var(--line);
+    background: var(--paper-light);
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .shelf-card h3{
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+  }
+
+  .shelf-card p{
+    color: var(--text-soft);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* ---------- FORMS ---------- */
+  .panel{
+    background: var(--paper-light);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 28px 30px;
+    margin-bottom: 36px;
+  }
+
+  .panel h2{
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+  }
+
+  .panel .sub{
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    margin-bottom: 22px;
+  }
+
+  form{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 20px;
+  }
+
+  .field{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field.full{
+    grid-column: 1 / -1;
+  }
+
+  .field label{
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+
+  .field .hint{
+    font-size: 0.75rem;
+    color: var(--text-soft);
+    font-weight: 400;
+  }
+
+  input, select{
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  input:focus, select:focus, button:focus-visible{
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+
+  .checkbox-row{
+    flex-direction: row;
+    align-items: center;
+    gap: 10px !important;
+  }
+
+  .checkbox-row input{
+    width: 17px;
+    height: 17px;
+  }
+
+  .checkbox-row label{
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .form-actions{
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
+
+  button.submit{
+    all: unset;
+    cursor: pointer;
+    background: var(--ink);
+    color: var(--paper-light);
+    padding: 11px 26px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+
+  button.submit:hover{
+    background: var(--ink-soft);
+  }
+
+  .feedback{
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    color: var(--ok);
+    display: none;
+  }
+
+  .feedback.show{ display: block; }
+
+  /* ---------- TABLES ---------- */
+  .table-wrap{
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper-light);
+  }
+
+  table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  thead th{
+    text-align: left;
+    background: var(--ink);
+    color: var(--paper-light);
+    font-weight: 600;
+    padding: 12px 16px;
+    white-space: nowrap;
+  }
+
+  tbody td{
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--line);
+    color: var(--text);
+  }
+
+  tbody tr:last-child td{ border-bottom: none; }
+
+  tbody tr:hover{
+    background: rgba(192,138,40,0.06);
+  }
+
+  .tag{
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .tag.yes{ background: rgba(74,107,82,0.15); color: var(--ok); }
+  .tag.no{ background: rgba(139,74,58,0.12); color: var(--rust); }
+
+  .empty-note{
+    padding: 18px 16px;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 880px){
+    .app{ flex-direction: column; }
+    .sidebar{ width: 100%; height: auto; position: relative; flex-direction: row; overflow-x: auto; padding: 18px 0; }
+    .brand{ display:none; }
+    nav{ flex-direction: row; }
+    nav button{ border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+    nav button.active{ border-bottom-color: var(--gold); }
+    main{ padding: 32px 20px; }
+    form{ grid-template-columns: 1fr; }
+    .stats{ grid-template-columns: repeat(2,1fr); }
+    .shelf{ grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .tab{ animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">Livraria<br>Saber
+      <span>SISTEMA DE CADASTRO</span>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-tab="inicio">Início</button>
+      <button class="nav-btn" data-tab="produtos">Produtos</button>
+      <button class="nav-btn" data-tab="generos">Gêneros</button>
+      <button class="nav-btn" data-tab="enderecos">Endereços</button>
+      <button class="nav-btn" data-tab="clientes">Clientes</button>
+      <button class="nav-btn" data-tab="estoque">Estoque</button>
+    </nav>
+    <div class="sidebar-footer">
+      Livraria Saber &copy; 2026<br>Catálogo interno
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ===================== INÍCIO ===================== -->
+    <section id="inicio" class="tab active">
+      <div class="hero">
+        <h1>Cada livro tem um lugar na prateleira.</h1>
+        <p>Cadastre produtos, gêneros, clientes, endereços e estoque num só lugar. Este painel organiza o catálogo da Livraria Saber e mantém tudo pronto para consulta.</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="stat-livros">1</div>
+          <div class="stat-label">Livros cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-generos">8</div>
+          <div class="stat-label">Gêneros ativos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-clientes">1</div>
+          <div class="stat-label">Clientes registrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="stat-estoque">16</div>
+          <div class="stat-label">Itens em estoque</div>
+        </div>
+      </div>
+
+      <div class="shelf">
+        <div class="shelf-card">
+          <h3>Produtos</h3>
+          <p>Cadastre livros com autor, gênero e preço, e marque os que estão disponíveis como presente.</p>
+        </div>
+        <div class="shelf-card">
+          <h3>Clientes &amp; Endereços</h3>
+          <p>Registre clientes e vincule cada endereço de entrega a quem já está na base.</p>
+        </div>
+        <div class="shelf-card">
+          <h3>Estoque</h3>
+          <p>Acompanhe a quantidade de cada título e, quando houver reserva, quem e onde entregar.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PRODUTOS (LIVROS) ===================== -->
+    <section id="produtos" class="tab">
+      <div class="eyebrow">Cadastro</div>
+      <h1 class="page-title">Produtos</h1>
+      <p class="page-lede">Livros do catálogo, com autor, gênero e preço de venda.</p>
+
+      <div class="panel">
+        <h2>Novo livro</h2>
+        <p class="sub">Preencha os dados abaixo para adicionar um título ao catálogo.</p>
+        <form id="form-produto">
+          <div class="field">
+            <label for="p-nome">Nome do livro</label>
+            <input type="text" id="p-nome" maxlength="50" required placeholder="Ex: Metamorfose">
+          </div>
+          <div class="field">
+            <label for="p-autor">Autor</label>
+            <input type="text" id="p-autor" maxlength="50" required placeholder="Ex: Franz Kafka">
+          </div>
+          <div class="field">
+            <label for="p-genero">Gênero</label>
+            <select id="p-genero" required></select>
+          </div>
+          <div class="field">
+            <label for="p-preco">Preço (R$)</label>
+            <input type="number" id="p-preco" min="0" step="0.01" required placeholder="0,00">
+          </div>
+          <div class="field checkbox-row full">
+            <input type="checkbox" id="p-presente" checked>
+            <label for="p-presente">Disponível para presente</label>
+          </div>
+          <div class="feedback" id="fb-produto">Livro cadastrado com sucesso.</div>
+          <div class="form-actions">
+            <button type="submit" class="submit">Cadastrar livro</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Nome</th><th>Autor</th><th>Gênero</th><th>Preço</th><th>Presente</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-produtos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== GÊNEROS ===================== -->
+    <section id="generos" class="tab">
+      <div class="eyebrow">Cadastro</div>
+      <h1 class="page-title">Gêneros</h1>
+      <p class="page-lede">Categorias usadas para classificar os livros do catálogo.</p>
+
+      <div class="panel">
+        <h2>Novo gênero</h2>
+        <p class="sub">Cadastre uma nova categoria literária.</p>
+        <form id="form-genero">
+          <div class="field full">
+            <label for="g-nome">Nome do gênero</label>
+            <input type="text" id="g-nome" maxlength="25" required placeholder="Ex: Fantasia">
+          </div>
+          <div class="feedback" id="fb-genero">Gênero cadastrado com sucesso.</div>
+          <div class="form-actions">
+            <button type="submit" class="submit">Cadastrar gênero</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th></tr></thead>
+          <tbody id="tabela-generos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== ENDEREÇOS ===================== -->
+    <section id="enderecos" class="tab">
+      <div class="eyebrow">Cadastro</div>
+      <h1 class="page-title">Endereços</h1>
+      <p class="page-lede">Endereços de entrega vinculados a um cliente já cadastrado.</p>
+
+      <div class="panel">
+        <h2>Novo endereço</h2>
+        <p class="sub">Vincule o endereço a um cliente existente.</p>
+        <form id="form-endereco">
+          <div class="field">
+            <label for="e-rua">Rua</label>
+            <input type="text" id="e-rua" maxlength="20" required placeholder="Ex: José Lanznaster">
+          </div>
+          <div class="field">
+            <label for="e-bairro">Bairro</label>
+            <input type="text" id="e-bairro" maxlength="25" required placeholder="Ex: Coloninha">
+          </div>
+          <div class="field">
+            <label for="e-cidade">Cidade</label>
+            <input type="text" id="e-cidade" maxlength="32" required placeholder="Ex: Gaspar">
+          </div>
+          <div class="field">
+            <label for="e-estado">Estado (UF)</label>
+            <input type="text" id="e-estado" maxlength="2" required placeholder="Ex: SC" style="text-transform:uppercase">
+          </div>
+          <div class="field full">
+            <label for="e-cliente">Cliente</label>
+            <select id="e-cliente" required></select>
+          </div>
+          <div class="feedback" id="fb-endereco">Endereço cadastrado com sucesso.</div>
+          <div class="form-actions">
+            <button type="submit" class="submit">Cadastrar endereço</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Rua</th><th>Bairro</th><th>Cidade</th><th>UF</th><th>Cliente</th></tr>
+          </thead>
+          <tbody id="tabela-enderecos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== CLIENTES ===================== -->
+    <section id="clientes" class="tab">
+      <div class="eyebrow">Cadastro</div>
+      <h1 class="page-title">Clientes</h1>
+      <p class="page-lede">Pessoas cadastradas na base da livraria.</p>
+
+      <div class="panel">
+        <h2>Novo cliente</h2>
+        <p class="sub">Dados básicos de identificação do cliente.</p>
+        <form id="form-cliente">
+          <div class="field">
+            <label for="c-nome">Nome</label>
+            <input type="text" id="c-nome" maxlength="20" required placeholder="Ex: Pedro">
+          </div>
+          <div class="field">
+            <label for="c-idade">Idade</label>
+            <input type="number" id="c-idade" min="0" max="130" required placeholder="Ex: 23">
+          </div>
+          <div class="field full">
+            <label for="c-sexo">Sexo</label>
+            <select id="c-sexo" required>
+              <option value="F">Feminino</option>
+              <option value="M">Masculino</option>
+              <option value="NB">Não-binário</option>
+            </select>
+          </div>
+          <div class="feedback" id="fb-cliente">Cliente cadastrado com sucesso.</div>
+          <div class="form-actions">
+            <button type="submit" class="submit">Cadastrar cliente</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th><th>Idade</th><th>Sexo</th></tr></thead>
+          <tbody id="tabela-clientes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================== ESTOQUE ===================== -->
+    <section id="estoque" class="tab">
+      <div class="eyebrow">Cadastro</div>
+      <h1 class="page-title">Estoque</h1>
+      <p class="page-lede">Quantidade disponível de cada livro. Cliente e endereço são opcionais, usados quando o item está reservado para entrega.</p>
+
+      <div class="panel">
+        <h2>Novo lançamento de estoque</h2>
+        <p class="sub">Informe o livro e a quantidade; associe a um cliente somente se for uma reserva.</p>
+        <form id="form-estoque">
+          <div class="field">
+            <label for="s-livro">Livro</label>
+            <select id="s-livro" required></select>
+          </div>
+          <div class="field">
+            <label for="s-quantidade">Quantidade</label>
+            <input type="number" id="s-quantidade" min="0" value="0" required>
+          </div>
+          <div class="field">
+            <label for="s-cliente">Cliente <span class="hint">(opcional)</span></label>
+            <select id="s-cliente">
+              <option value="">Nenhum</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="s-endereco">Endereço <span class="hint">(opcional)</span></label>
+            <select id="s-endereco">
+              <option value="">Nenhum</option>
+            </select>
+          </div>
+          <div class="feedback" id="fb-estoque">Estoque atualizado com sucesso.</div>
+          <div class="form-actions">
+            <button type="submit" class="submit">Lançar no estoque</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Livro</th><th>Gênero</th><th>Quantidade</th><th>Cliente</th><th>Cidade/UF</th></tr>
+          </thead>
+          <tbody id="tabela-estoque"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // ---------- estado inicial (equivalente aos INSERTs do banco) ----------
+  const state = {
+    generos: [
+      { id: 1, nome: 'Ação' },
+      { id: 2, nome: 'Aventura' },
+      { id: 3, nome: 'Comédia' },
+      { id: 4, nome: 'Drama' },
+      { id: 5, nome: 'Terror' },
+      { id: 6, nome: 'Ficção Científica' },
+      { id: 7, nome: 'Romance' },
+      { id: 8, nome: 'Suspense' },
+    ],
+    livros: [
+      { id: 1, nome: 'Metamorfose', autor: 'Franz Kafka', generoId: 4, preco: 35.99, presente: true },
+    ],
+    clientes: [
+      { id: 1, nome: 'Pedro', idade: 23, sexo: 'M' },
+    ],
+    enderecos: [
+      { id: 1, rua: 'José Lanznaster', bairro: 'Coloninha', cidade: 'Gaspar', estado: 'SC', clienteId: 1 },
+    ],
+    estoque: [
+      { id: 1, livroId: 1, quantidade: 15, clienteId: null, enderecoId: null },
+      { id: 2, livroId: 1, quantidade: 1, clienteId: 1, enderecoId: 1 },
+    ],
+  };
+
+  const nextId = (arr) => (arr.length ? Math.max(...arr.map(i => i.id)) + 1 : 1);
+  const sexoLabel = { F: 'Feminino', M: 'Masculino', NB: 'Não-binário' };
+
+  // ---------- navegação entre abas ----------
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  function flash(id){
+    const el = document.getElementById(id);
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  // ---------- selects dependentes ----------
+  function fillSelect(select, items, labelFn, placeholder){
+    const current = select.value;
+    select.innerHTML = '';
+    if (placeholder){
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      select.appendChild(opt);
+    }
+    items.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.id;
+      opt.textContent = labelFn(item);
+      select.appendChild(opt);
+    });
+    if ([...select.options].some(o => o.value === current)) select.value = current;
+  }
+
+  function refreshSelects(){
+    fillSelect(document.getElementById('p-genero'), state.generos, g => g.nome);
+    fillSelect(document.getElementById('e-cliente'), state.clientes, c => c.nome);
+    fillSelect(document.getElementById('s-livro'), state.livros, l => l.nome);
+    fillSelect(document.getElementById('s-cliente'), state.clientes, c => c.nome, 'Nenhum');
+    fillSelect(document.getElementById('s-endereco'), state.enderecos, e => `${e.rua}, ${e.cidade}/${e.estado}`, 'Nenhum');
+  }
+
+  // ---------- renderização das tabelas ----------
+  function renderGeneros(){
+    const tbody = document.getElementById('tabela-generos');
+    tbody.innerHTML = state.generos.map(g => `
+      <tr><td>${g.id}</td><td>${g.nome}</td></tr>
+    `).join('');
+  }
+
+  function renderProdutos(){
+    const tbody = document.getElementById('tabela-produtos');
+    tbody.innerHTML = state.livros.map(l => {
+      const genero = state.generos.find(g => g.id === Number(l.generoId));
+      return `
+        <tr>
+          <td>${l.id}</td>
+          <td>${l.nome}</td>
+          <td>${l.autor}</td>
+          <td>${genero ? genero.nome : '—'}</td>
+          <td>R$ ${l.preco.toFixed(2).replace('.', ',')}</td>
+          <td><span class="tag ${l.presente ? 'yes' : 'no'}">${l.presente ? 'Sim' : 'Não'}</span></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderClientes(){
+    const tbody = document.getElementById('tabela-clientes');
+    tbody.innerHTML = state.clientes.map(c => `
+      <tr><td>${c.id}</td><td>${c.nome}</td><td>${c.idade}</td><td>${sexoLabel[c.sexo]}</td></tr>
+    `).join('');
+  }
+
+  function renderEnderecos(){
+    const tbody = document.getElementById('tabela-enderecos');
+    tbody.innerHTML = state.enderecos.map(e => {
+      const cliente = state.clientes.find(c => c.id === Number(e.clienteId));
+      return `
+        <tr>
+          <td>${e.id}</td><td>${e.rua}</td><td>${e.bairro}</td><td>${e.cidade}</td>
+          <td>${e.estado}</td><td>${cliente ? cliente.nome : '—'}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderEstoque(){
+    const tbody = document.getElementById('tabela-estoque');
+    tbody.innerHTML = state.estoque.map(s => {
+      const livro = state.livros.find(l => l.id === Number(s.livroId));
+      const genero = livro ? state.generos.find(g => g.id === Number(livro.generoId)) : null;
+      const cliente = state.clientes.find(c => c.id === Number(s.clienteId));
+      const endereco = state.enderecos.find(e => e.id === Number(s.enderecoId));
+      return `
+        <tr>
+          <td>${s.id}</td>
+          <td>${livro ? livro.nome : '—'}</td>
+          <td>${genero ? genero.nome : '—'}</td>
+          <td>${s.quantidade}</td>
+          <td>${cliente ? cliente.nome : '—'}</td>
+          <td>${endereco ? `${endereco.cidade}/${endereco.estado}` : '—'}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function renderStats(){
+    document.getElementById('stat-livros').textContent = state.livros.length;
+    document.getElementById('stat-generos').textContent = state.generos.length;
+    document.getElementById('stat-clientes').textContent = state.clientes.length;
+    document.getElementById('stat-estoque').textContent = state.estoque.reduce((sum, s) => sum + Number(s.quantidade), 0);
+  }
+
+  function renderAll(){
+    renderGeneros(); renderProdutos(); renderClientes(); renderEnderecos(); renderEstoque(); renderStats();
+    refreshSelects();
+  }
+
+  // ---------- handlers de formulário ----------
+  document.getElementById('form-genero').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const nome = document.getElementById('g-nome').value.trim();
+    if (!nome) return;
+    state.generos.push({ id: nextId(state.generos), nome });
+    ev.target.reset();
+    renderAll();
+    flash('fb-genero');
+  });
+
+  document.getElementById('form-produto').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const nome = document.getElementById('p-nome').value.trim();
+    const autor = document.getElementById('p-autor').value.trim();
+    const generoId = document.getElementById('p-genero').value;
+    const preco = parseFloat(document.getElementById('p-preco').value);
+    const presente = document.getElementById('p-presente').checked;
+    if (!nome || !autor || !generoId || isNaN(preco)) return;
+    state.livros.push({ id: nextId(state.livros), nome, autor, generoId, preco, presente });
+    ev.target.reset();
+    document.getElementById('p-presente').checked = true;
+    renderAll();
+    flash('fb-produto');
+  });
+
+  document.getElementById('form-cliente').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const nome = document.getElementById('c-nome').value.trim();
+    const idade = parseInt(document.getElementById('c-idade').value, 10);
+    const sexo = document.getElementById('c-sexo').value;
+    if (!nome || isNaN(idade)) return;
+    state.clientes.push({ id: nextId(state.clientes), nome, idade, sexo });
+    ev.target.reset();
+    renderAll();
+    flash('fb-cliente');
+  });
+
+  document.getElementById('form-endereco').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const rua = document.getElementById('e-rua').value.trim();
+    const bairro = document.getElementById('e-bairro').value.trim();
+    const cidade = document.getElementById('e-cidade').value.trim();
+    const estado = document.getElementById('e-estado').value.trim().toUpperCase();
+    const clienteId = document.getElementById('e-cliente').value;
+    if (!rua || !bairro || !cidade || !estado || !clienteId) return;
+    state.enderecos.push({ id: nextId(state.enderecos), rua, bairro, cidade, estado, clienteId });
+    ev.target.reset();
+    renderAll();
+    flash('fb-endereco');
+  });
+
+  document.getElementById('form-estoque').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const livroId = document.getElementById('s-livro').value;
+    const quantidade = parseInt(document.getElementById('s-quantidade').value, 10);
+    const clienteId = document.getElementById('s-cliente').value || null;
+    const enderecoId = document.getElementById('s-endereco').value || null;
+    if (!livroId || isNaN(quantidade)) return;
+    state.estoque.push({ id: nextId(state.estoque), livroId, quantidade, clienteId, enderecoId });
+    ev.target.reset();
+    document.getElementById('s-quantidade').value = 0;
+    renderAll();
+    flash('fb-estoque');
+  });
+
+  renderAll();
+</script>
+
+</body>
+</html>
