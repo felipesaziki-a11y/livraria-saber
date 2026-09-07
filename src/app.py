@@ -4,7 +4,7 @@ import sys
 from fastapi.middleware.cors import CORSMiddleware
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.controllers import genero_controller, livro_controller, cliente_controller, estoque_controller
+from src.controllers import genero_controller, livro_controller, cliente_controller, estoque_controller, endereco_controller
 
 
 app = FastAPI(
@@ -25,6 +25,7 @@ app.include_router(genero_controller.router)
 app.include_router(livro_controller.router)
 app.include_router(cliente_controller.router)
 app.include_router(estoque_controller.router)
+app.include_router(endereco_controller.router)
 
 
 if __name__ == "__main__":
