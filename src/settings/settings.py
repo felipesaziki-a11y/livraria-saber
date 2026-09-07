@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -12,8 +12,9 @@ class Settings(BaseSettings):
     db_password: str
     db_name: str
 
-    class Config:
-        env_file = Path(__file__).resolve().parent / ".env"
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent.parent / ".env"
+    )
 
 
 settings = Settings()

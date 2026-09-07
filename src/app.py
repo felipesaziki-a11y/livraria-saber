@@ -6,7 +6,7 @@ import sys
 # para que os imports `from src import .` funcionem corretamente
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.controllers import categoria_controller
+from src.controllers import genero_controller, livro_controller, cliente_controller, estoque_controller
 
 
 app = FastAPI(
@@ -15,7 +15,10 @@ app = FastAPI(
     version="0.1.0"
 )
 
-app.include_router(categoria_controller.router)
+app.include_router(genero_controller.router)
+app.include_router(livro_controller.router)
+app.include_router(cliente_controller.router)
+app.include_router(estoque_controller.router)
 
 
 if __name__ == "__main__":

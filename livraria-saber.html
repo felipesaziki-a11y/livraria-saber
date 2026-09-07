@@ -19,6 +19,7 @@
     --text-soft: #5b5346;
     --line: #d9cfb8;
     --ok: #4a6b52;
+    --err: #a8402e;
   }
 
   *{ box-sizing: border-box; }
@@ -111,10 +112,28 @@
   .sidebar-footer{
     margin-top: auto;
     padding: 0 28px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: rgba(239,231,216,0.4);
     line-height: 1.5;
   }
+
+  .api-status{
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 10px;
+  }
+
+  .dot{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-soft);
+    flex-shrink: 0;
+  }
+
+  .dot.ok{ background: #6fae7c; }
+  .dot.err{ background: #d97c6c; }
 
   /* ---------- MAIN ---------- */
   main{
@@ -151,7 +170,20 @@
     color: var(--text-soft);
     max-width: 60ch;
     line-height: 1.55;
-    margin-bottom: 36px;
+    margin-bottom: 28px;
+  }
+
+  .notice{
+    display: flex;
+    gap: 10px;
+    background: rgba(192,138,40,0.12);
+    border: 1px solid rgba(192,138,40,0.35);
+    color: var(--gold-dark);
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 28px;
   }
 
   /* ---------- HOME ---------- */
@@ -325,6 +357,8 @@
     grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 14px;
     margin-top: 4px;
   }
 
@@ -344,14 +378,20 @@
     background: var(--ink-soft);
   }
 
+  button.submit:disabled{
+    opacity: 0.55;
+    cursor: default;
+  }
+
   .feedback{
     grid-column: 1 / -1;
     font-size: 0.85rem;
-    color: var(--ok);
     display: none;
   }
 
   .feedback.show{ display: block; }
+  .feedback.ok{ color: var(--ok); }
+  .feedback.err{ color: var(--err); }
 
   /* ---------- TABLES ---------- */
   .table-wrap{
@@ -359,6 +399,8 @@
     border: 1px solid var(--line);
     border-radius: 6px;
     background: var(--paper-light);
+    position: relative;
+    min-height: 60px;
   }
 
   table{
@@ -380,6 +422,7 @@
     padding: 11px 16px;
     border-bottom: 1px solid var(--line);
     color: var(--text);
+    white-space: nowrap;
   }
 
   tbody tr:last-child td{ border-bottom: none; }
@@ -399,10 +442,27 @@
   .tag.yes{ background: rgba(74,107,82,0.15); color: var(--ok); }
   .tag.no{ background: rgba(139,74,58,0.12); color: var(--rust); }
 
-  .empty-note{
+  .empty-note, .loading-note, .error-note{
     padding: 18px 16px;
-    color: var(--text-soft);
     font-size: 0.88rem;
+  }
+
+  .empty-note{ color: var(--text-soft); }
+  .loading-note{ color: var(--text-soft); }
+  .error-note{ color: var(--err); }
+
+  .btn-icon{
+    all: unset;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--rust);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .btn-icon:hover{
+    background: rgba(139,74,58,0.1);
   }
 
   @media (max-width: 880px){
@@ -440,7 +500,11 @@
       <button class="nav-btn" data-tab="estoque">Estoque</button>
     </nav>
     <div class="sidebar-footer">
-      Livraria Saber &copy; 2026<br>Catálogo interno
+      <div class="api-status">
+        <span class="dot" id="api-dot"></span>
+        <span id="api-label">Verificando API…</span>
+      </div>
+      Livraria Saber &copy; 2026
     </div>
   </aside>
 
@@ -450,24 +514,24 @@
     <section id="inicio" class="tab active">
       <div class="hero">
         <h1>Cada livro tem um lugar na prateleira.</h1>
-        <p>Cadastre produtos, gêneros, clientes, endereços e estoque num só lugar. Este painel organiza o catálogo da Livraria Saber e mantém tudo pronto para consulta.</p>
+        <p>Cadastre produtos, gêneros, clientes, endereços e estoque num só lugar. Este painel fala diretamente com a API da Livraria Saber.</p>
       </div>
 
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-number" id="stat-livros">1</div>
+          <div class="stat-number" id="stat-livros">–</div>
           <div class="stat-label">Livros cadastrados</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" id="stat-generos">8</div>
+          <div class="stat-number" id="stat-generos">–</div>
           <div class="stat-label">Gêneros ativos</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" id="stat-clientes">1</div>
+          <div class="stat-number" id="stat-clientes">–</div>
           <div class="stat-label">Clientes registrados</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number" id="stat-estoque">16</div>
+          <div class="stat-number" id="stat-estoque">–</div>
           <div class="stat-label">Itens em estoque</div>
         </div>
       </div>
@@ -518,7 +582,7 @@
             <input type="checkbox" id="p-presente" checked>
             <label for="p-presente">Disponível para presente</label>
           </div>
-          <div class="feedback" id="fb-produto">Livro cadastrado com sucesso.</div>
+          <div class="feedback" id="fb-produto"></div>
           <div class="form-actions">
             <button type="submit" class="submit">Cadastrar livro</button>
           </div>
@@ -529,7 +593,7 @@
         <table>
           <thead>
             <tr>
-              <th>ID</th><th>Nome</th><th>Autor</th><th>Gênero</th><th>Preço</th><th>Presente</th>
+              <th>ID</th><th>Nome</th><th>Autor</th><th>Gênero</th><th>Preço</th><th>Presente</th><th></th>
             </tr>
           </thead>
           <tbody id="tabela-produtos"></tbody>
@@ -551,7 +615,7 @@
             <label for="g-nome">Nome do gênero</label>
             <input type="text" id="g-nome" maxlength="25" required placeholder="Ex: Fantasia">
           </div>
-          <div class="feedback" id="fb-genero">Gênero cadastrado com sucesso.</div>
+          <div class="feedback" id="fb-genero"></div>
           <div class="form-actions">
             <button type="submit" class="submit">Cadastrar gênero</button>
           </div>
@@ -560,7 +624,7 @@
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>ID</th><th>Nome</th></tr></thead>
+          <thead><tr><th>ID</th><th>Nome</th><th></th></tr></thead>
           <tbody id="tabela-generos"></tbody>
         </table>
       </div>
@@ -571,6 +635,12 @@
       <div class="eyebrow">Cadastro</div>
       <h1 class="page-title">Endereços</h1>
       <p class="page-lede">Endereços de entrega vinculados a um cliente já cadastrado.</p>
+
+      <div class="notice">
+        A API ainda não tem um endpoint para endereços. Os cadastros feitos aqui ficam
+        salvos apenas nesta página (em memória) e são perdidos ao recarregar — assim que
+        o CRUD de endereços existir no backend, essa seção passa a gravar de verdade.
+      </div>
 
       <div class="panel">
         <h2>Novo endereço</h2>
@@ -596,9 +666,9 @@
             <label for="e-cliente">Cliente</label>
             <select id="e-cliente" required></select>
           </div>
-          <div class="feedback" id="fb-endereco">Endereço cadastrado com sucesso.</div>
+          <div class="feedback" id="fb-endereco"></div>
           <div class="form-actions">
-            <button type="submit" class="submit">Cadastrar endereço</button>
+            <button type="submit" class="submit">Cadastrar endereço (local)</button>
           </div>
         </form>
       </div>
@@ -639,7 +709,7 @@
               <option value="NB">Não-binário</option>
             </select>
           </div>
-          <div class="feedback" id="fb-cliente">Cliente cadastrado com sucesso.</div>
+          <div class="feedback" id="fb-cliente"></div>
           <div class="form-actions">
             <button type="submit" class="submit">Cadastrar cliente</button>
           </div>
@@ -648,7 +718,7 @@
 
       <div class="table-wrap">
         <table>
-          <thead><tr><th>ID</th><th>Nome</th><th>Idade</th><th>Sexo</th></tr></thead>
+          <thead><tr><th>ID</th><th>Nome</th><th>Idade</th><th>Sexo</th><th></th></tr></thead>
           <tbody id="tabela-clientes"></tbody>
         </table>
       </div>
@@ -679,12 +749,12 @@
             </select>
           </div>
           <div class="field">
-            <label for="s-endereco">Endereço <span class="hint">(opcional)</span></label>
+            <label for="s-endereco">Endereço <span class="hint">(opcional, local)</span></label>
             <select id="s-endereco">
               <option value="">Nenhum</option>
             </select>
           </div>
-          <div class="feedback" id="fb-estoque">Estoque atualizado com sucesso.</div>
+          <div class="feedback" id="fb-estoque"></div>
           <div class="form-actions">
             <button type="submit" class="submit">Lançar no estoque</button>
           </div>
@@ -694,7 +764,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>ID</th><th>Livro</th><th>Gênero</th><th>Quantidade</th><th>Cliente</th><th>Cidade/UF</th></tr>
+            <tr><th>ID</th><th>Livro</th><th>Gênero</th><th>Quantidade</th><th>Cliente</th><th></th></tr>
           </thead>
           <tbody id="tabela-estoque"></tbody>
         </table>
@@ -705,37 +775,59 @@
 </div>
 
 <script>
-  // ---------- estado inicial (equivalente aos INSERTs do banco) ----------
-  const state = {
-    generos: [
-      { id: 1, nome: 'Ação' },
-      { id: 2, nome: 'Aventura' },
-      { id: 3, nome: 'Comédia' },
-      { id: 4, nome: 'Drama' },
-      { id: 5, nome: 'Terror' },
-      { id: 6, nome: 'Ficção Científica' },
-      { id: 7, nome: 'Romance' },
-      { id: 8, nome: 'Suspense' },
-    ],
-    livros: [
-      { id: 1, nome: 'Metamorfose', autor: 'Franz Kafka', generoId: 4, preco: 35.99, presente: true },
-    ],
-    clientes: [
-      { id: 1, nome: 'Pedro', idade: 23, sexo: 'M' },
-    ],
-    enderecos: [
-      { id: 1, rua: 'José Lanznaster', bairro: 'Coloninha', cidade: 'Gaspar', estado: 'SC', clienteId: 1 },
-    ],
-    estoque: [
-      { id: 1, livroId: 1, quantidade: 15, clienteId: null, enderecoId: null },
-      { id: 2, livroId: 1, quantidade: 1, clienteId: 1, enderecoId: 1 },
-    ],
+  // ---------------------------------------------------------------
+  // Configuração da API
+  // ---------------------------------------------------------------
+  // Troque pela URL/porta real do seu backend caso seja diferente.
+  const API_URL = 'http://127.0.0.1:8000';
+
+  // Dados que ainda não têm endpoint no backend (endereços) ficam
+  // só em memória, no navegador.
+  const local = {
+    enderecos: [],
   };
 
-  const nextId = (arr) => (arr.length ? Math.max(...arr.map(i => i.id)) + 1 : 1);
+  // Cache local dos dados vindos da API, usado para montar os
+  // <select> e as tabelas sem precisar buscar tudo de novo.
+  const cache = {
+    generos: [],
+    livros: [],
+    clientes: [],
+    estoque: [],
+  };
+
   const sexoLabel = { F: 'Feminino', M: 'Masculino', NB: 'Não-binário' };
 
-  // ---------- navegação entre abas ----------
+  // ---------------------------------------------------------------
+  // Helper genérico para chamar a API
+  // ---------------------------------------------------------------
+  async function api(path, options = {}) {
+    const response = await fetch(`${API_URL}${path}`, {
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+
+    if (!response.ok) {
+      let detail = `Erro ${response.status}`;
+      try {
+        const body = await response.json();
+        if (body.detail) {
+          detail = typeof body.detail === 'string'
+            ? body.detail
+            : JSON.stringify(body.detail);
+        }
+      } catch (_) { /* resposta sem corpo JSON */ }
+      throw new Error(detail);
+    }
+
+    if (response.status === 204) return null;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  // ---------------------------------------------------------------
+  // Navegação entre abas
+  // ---------------------------------------------------------------
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -745,13 +837,26 @@
     });
   });
 
-  function flash(id){
+  function flash(id, message, tipo = 'ok'){
     const el = document.getElementById(id);
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2500);
+    el.textContent = message;
+    el.className = `feedback show ${tipo}`;
+    setTimeout(() => el.classList.remove('show'), 3000);
   }
 
-  // ---------- selects dependentes ----------
+  function setLoading(tbodyId, colspan){
+    document.getElementById(tbodyId).innerHTML =
+      `<tr><td colspan="${colspan}" class="loading-note">Carregando…</td></tr>`;
+  }
+
+  function setError(tbodyId, colspan, mensagem){
+    document.getElementById(tbodyId).innerHTML =
+      `<tr><td colspan="${colspan}" class="error-note">Não foi possível carregar: ${mensagem}</td></tr>`;
+  }
+
+  // ---------------------------------------------------------------
+  // Selects dependentes
+  // ---------------------------------------------------------------
   function fillSelect(select, items, labelFn, placeholder){
     const current = select.value;
     select.innerHTML = '';
@@ -771,48 +876,124 @@
   }
 
   function refreshSelects(){
-    fillSelect(document.getElementById('p-genero'), state.generos, g => g.nome);
-    fillSelect(document.getElementById('e-cliente'), state.clientes, c => c.nome);
-    fillSelect(document.getElementById('s-livro'), state.livros, l => l.nome);
-    fillSelect(document.getElementById('s-cliente'), state.clientes, c => c.nome, 'Nenhum');
-    fillSelect(document.getElementById('s-endereco'), state.enderecos, e => `${e.rua}, ${e.cidade}/${e.estado}`, 'Nenhum');
+    fillSelect(document.getElementById('p-genero'), cache.generos, g => g.nome);
+    fillSelect(document.getElementById('e-cliente'), cache.clientes, c => c.nome);
+    fillSelect(document.getElementById('s-livro'), cache.livros, l => l.nome);
+    fillSelect(document.getElementById('s-cliente'), cache.clientes, c => c.nome, 'Nenhum');
+    fillSelect(
+      document.getElementById('s-endereco'),
+      local.enderecos,
+      e => `${e.rua}, ${e.cidade}/${e.estado}`,
+      'Nenhum'
+    );
   }
 
-  // ---------- renderização das tabelas ----------
+  // ---------------------------------------------------------------
+  // Carregar e renderizar: GÊNEROS
+  // ---------------------------------------------------------------
+  async function carregarGeneros(){
+    setLoading('tabela-generos', 3);
+    try {
+      cache.generos = await api('/generos');
+      renderGeneros();
+    } catch (err) {
+      setError('tabela-generos', 3, err.message);
+    }
+    refreshSelects();
+    renderStats();
+  }
+
   function renderGeneros(){
     const tbody = document.getElementById('tabela-generos');
-    tbody.innerHTML = state.generos.map(g => `
-      <tr><td>${g.id}</td><td>${g.nome}</td></tr>
+    if (!cache.generos.length){
+      tbody.innerHTML = '<tr><td colspan="3" class="empty-note">Nenhum gênero cadastrado ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = cache.generos.map(g => `
+      <tr>
+        <td>${g.id}</td>
+        <td>${g.nome}</td>
+        <td><button class="btn-icon" data-acao="excluir-genero" data-id="${g.id}">Excluir</button></td>
+      </tr>
     `).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // Carregar e renderizar: LIVROS
+  // ---------------------------------------------------------------
+  async function carregarLivros(){
+    setLoading('tabela-produtos', 7);
+    try {
+      cache.livros = await api('/livros');
+      renderProdutos();
+    } catch (err) {
+      setError('tabela-produtos', 7, err.message);
+    }
+    refreshSelects();
+    renderStats();
   }
 
   function renderProdutos(){
     const tbody = document.getElementById('tabela-produtos');
-    tbody.innerHTML = state.livros.map(l => {
-      const genero = state.generos.find(g => g.id === Number(l.generoId));
+    if (!cache.livros.length){
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-note">Nenhum livro cadastrado ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = cache.livros.map(l => {
+      const genero = cache.generos.find(g => g.id === l.genero_id);
       return `
         <tr>
           <td>${l.id}</td>
           <td>${l.nome}</td>
           <td>${l.autor}</td>
           <td>${genero ? genero.nome : '—'}</td>
-          <td>R$ ${l.preco.toFixed(2).replace('.', ',')}</td>
+          <td>R$ ${Number(l.preco).toFixed(2).replace('.', ',')}</td>
           <td><span class="tag ${l.presente ? 'yes' : 'no'}">${l.presente ? 'Sim' : 'Não'}</span></td>
+          <td><button class="btn-icon" data-acao="excluir-livro" data-id="${l.id}">Excluir</button></td>
         </tr>`;
     }).join('');
   }
 
+  // ---------------------------------------------------------------
+  // Carregar e renderizar: CLIENTES
+  // ---------------------------------------------------------------
+  async function carregarClientes(){
+    setLoading('tabela-clientes', 5);
+    try {
+      cache.clientes = await api('/clientes');
+      renderClientes();
+    } catch (err) {
+      setError('tabela-clientes', 5, err.message);
+    }
+    refreshSelects();
+    renderStats();
+  }
+
   function renderClientes(){
     const tbody = document.getElementById('tabela-clientes');
-    tbody.innerHTML = state.clientes.map(c => `
-      <tr><td>${c.id}</td><td>${c.nome}</td><td>${c.idade}</td><td>${sexoLabel[c.sexo]}</td></tr>
+    if (!cache.clientes.length){
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-note">Nenhum cliente cadastrado ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = cache.clientes.map(c => `
+      <tr>
+        <td>${c.id}</td><td>${c.nome}</td><td>${c.idade}</td><td>${sexoLabel[c.sexo] || c.sexo}</td>
+        <td><button class="btn-icon" data-acao="excluir-cliente" data-id="${c.id}">Excluir</button></td>
+      </tr>
     `).join('');
   }
 
+  // ---------------------------------------------------------------
+  // ENDEREÇOS (ainda local, sem backend)
+  // ---------------------------------------------------------------
   function renderEnderecos(){
     const tbody = document.getElementById('tabela-enderecos');
-    tbody.innerHTML = state.enderecos.map(e => {
-      const cliente = state.clientes.find(c => c.id === Number(e.clienteId));
+    if (!local.enderecos.length){
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-note">Nenhum endereço cadastrado ainda nesta sessão.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = local.enderecos.map(e => {
+      const cliente = cache.clientes.find(c => c.id === Number(e.clienteId));
       return `
         <tr>
           <td>${e.id}</td><td>${e.rua}</td><td>${e.bairro}</td><td>${e.cidade}</td>
@@ -821,13 +1002,30 @@
     }).join('');
   }
 
+  // ---------------------------------------------------------------
+  // Carregar e renderizar: ESTOQUE
+  // ---------------------------------------------------------------
+  async function carregarEstoque(){
+    setLoading('tabela-estoque', 6);
+    try {
+      cache.estoque = await api('/estoque');
+      renderEstoque();
+    } catch (err) {
+      setError('tabela-estoque', 6, err.message);
+    }
+    renderStats();
+  }
+
   function renderEstoque(){
     const tbody = document.getElementById('tabela-estoque');
-    tbody.innerHTML = state.estoque.map(s => {
-      const livro = state.livros.find(l => l.id === Number(s.livroId));
-      const genero = livro ? state.generos.find(g => g.id === Number(livro.generoId)) : null;
-      const cliente = state.clientes.find(c => c.id === Number(s.clienteId));
-      const endereco = state.enderecos.find(e => e.id === Number(s.enderecoId));
+    if (!cache.estoque.length){
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-note">Nenhum item em estoque ainda.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = cache.estoque.map(s => {
+      const livro = cache.livros.find(l => l.id === s.livro_id);
+      const genero = livro ? cache.generos.find(g => g.id === livro.genero_id) : null;
+      const cliente = cache.clientes.find(c => c.id === s.cliente_id);
       return `
         <tr>
           <td>${s.id}</td>
@@ -835,61 +1033,103 @@
           <td>${genero ? genero.nome : '—'}</td>
           <td>${s.quantidade}</td>
           <td>${cliente ? cliente.nome : '—'}</td>
-          <td>${endereco ? `${endereco.cidade}/${endereco.estado}` : '—'}</td>
+          <td><button class="btn-icon" data-acao="excluir-estoque" data-id="${s.id}">Excluir</button></td>
         </tr>`;
     }).join('');
   }
 
+  // ---------------------------------------------------------------
+  // Estatísticas da página inicial
+  // ---------------------------------------------------------------
   function renderStats(){
-    document.getElementById('stat-livros').textContent = state.livros.length;
-    document.getElementById('stat-generos').textContent = state.generos.length;
-    document.getElementById('stat-clientes').textContent = state.clientes.length;
-    document.getElementById('stat-estoque').textContent = state.estoque.reduce((sum, s) => sum + Number(s.quantidade), 0);
+    document.getElementById('stat-livros').textContent = cache.livros.length;
+    document.getElementById('stat-generos').textContent = cache.generos.length;
+    document.getElementById('stat-clientes').textContent = cache.clientes.length;
+    document.getElementById('stat-estoque').textContent =
+      cache.estoque.reduce((soma, s) => soma + Number(s.quantidade), 0);
   }
 
-  function renderAll(){
-    renderGeneros(); renderProdutos(); renderClientes(); renderEnderecos(); renderEstoque(); renderStats();
-    refreshSelects();
+  // ---------------------------------------------------------------
+  // Status de conexão com a API
+  // ---------------------------------------------------------------
+  async function checarApi(){
+    const dot = document.getElementById('api-dot');
+    const label = document.getElementById('api-label');
+    try {
+      await api('/generos');
+      dot.classList.add('ok');
+      label.textContent = 'API conectada';
+    } catch (_) {
+      dot.classList.add('err');
+      label.textContent = 'API offline';
+    }
   }
 
-  // ---------- handlers de formulário ----------
-  document.getElementById('form-genero').addEventListener('submit', (ev) => {
+  // ---------------------------------------------------------------
+  // Handlers de formulário — GÊNERO
+  // ---------------------------------------------------------------
+  document.getElementById('form-genero').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const nome = document.getElementById('g-nome').value.trim();
     if (!nome) return;
-    state.generos.push({ id: nextId(state.generos), nome });
-    ev.target.reset();
-    renderAll();
-    flash('fb-genero');
+    try {
+      await api('/generos', { method: 'POST', body: JSON.stringify({ nome }) });
+      ev.target.reset();
+      flash('fb-genero', 'Gênero cadastrado com sucesso.');
+      await carregarGeneros();
+    } catch (err) {
+      flash('fb-genero', `Erro ao cadastrar: ${err.message}`, 'err');
+    }
   });
 
-  document.getElementById('form-produto').addEventListener('submit', (ev) => {
+  // ---------------------------------------------------------------
+  // Handlers de formulário — LIVRO
+  // ---------------------------------------------------------------
+  document.getElementById('form-produto').addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    const nome = document.getElementById('p-nome').value.trim();
-    const autor = document.getElementById('p-autor').value.trim();
-    const generoId = document.getElementById('p-genero').value;
-    const preco = parseFloat(document.getElementById('p-preco').value);
-    const presente = document.getElementById('p-presente').checked;
-    if (!nome || !autor || !generoId || isNaN(preco)) return;
-    state.livros.push({ id: nextId(state.livros), nome, autor, generoId, preco, presente });
-    ev.target.reset();
-    document.getElementById('p-presente').checked = true;
-    renderAll();
-    flash('fb-produto');
+    const payload = {
+      nome: document.getElementById('p-nome').value.trim(),
+      autor: document.getElementById('p-autor').value.trim(),
+      genero_id: Number(document.getElementById('p-genero').value),
+      preco: parseFloat(document.getElementById('p-preco').value),
+      presente: document.getElementById('p-presente').checked,
+    };
+    if (!payload.nome || !payload.autor || !payload.genero_id || isNaN(payload.preco)) return;
+    try {
+      await api('/livros', { method: 'POST', body: JSON.stringify(payload) });
+      ev.target.reset();
+      document.getElementById('p-presente').checked = true;
+      flash('fb-produto', 'Livro cadastrado com sucesso.');
+      await carregarLivros();
+    } catch (err) {
+      flash('fb-produto', `Erro ao cadastrar: ${err.message}`, 'err');
+    }
   });
 
-  document.getElementById('form-cliente').addEventListener('submit', (ev) => {
+  // ---------------------------------------------------------------
+  // Handlers de formulário — CLIENTE
+  // ---------------------------------------------------------------
+  document.getElementById('form-cliente').addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    const nome = document.getElementById('c-nome').value.trim();
-    const idade = parseInt(document.getElementById('c-idade').value, 10);
-    const sexo = document.getElementById('c-sexo').value;
-    if (!nome || isNaN(idade)) return;
-    state.clientes.push({ id: nextId(state.clientes), nome, idade, sexo });
-    ev.target.reset();
-    renderAll();
-    flash('fb-cliente');
+    const payload = {
+      nome: document.getElementById('c-nome').value.trim(),
+      idade: parseInt(document.getElementById('c-idade').value, 10),
+      sexo: document.getElementById('c-sexo').value,
+    };
+    if (!payload.nome || isNaN(payload.idade)) return;
+    try {
+      await api('/clientes', { method: 'POST', body: JSON.stringify(payload) });
+      ev.target.reset();
+      flash('fb-cliente', 'Cliente cadastrado com sucesso.');
+      await carregarClientes();
+    } catch (err) {
+      flash('fb-cliente', `Erro ao cadastrar: ${err.message}`, 'err');
+    }
   });
 
+  // ---------------------------------------------------------------
+  // Handler de formulário — ENDEREÇO (local, sem backend)
+  // ---------------------------------------------------------------
   document.getElementById('form-endereco').addEventListener('submit', (ev) => {
     ev.preventDefault();
     const rua = document.getElementById('e-rua').value.trim();
@@ -898,27 +1138,83 @@
     const estado = document.getElementById('e-estado').value.trim().toUpperCase();
     const clienteId = document.getElementById('e-cliente').value;
     if (!rua || !bairro || !cidade || !estado || !clienteId) return;
-    state.enderecos.push({ id: nextId(state.enderecos), rua, bairro, cidade, estado, clienteId });
+
+    const novoId = local.enderecos.length
+      ? Math.max(...local.enderecos.map(e => e.id)) + 1
+      : 1;
+    local.enderecos.push({ id: novoId, rua, bairro, cidade, estado, clienteId });
     ev.target.reset();
-    renderAll();
-    flash('fb-endereco');
+    flash('fb-endereco', 'Endereço cadastrado localmente (backend ainda não existe).');
+    renderEnderecos();
+    refreshSelects();
   });
 
-  document.getElementById('form-estoque').addEventListener('submit', (ev) => {
+  // ---------------------------------------------------------------
+  // Handler de formulário — ESTOQUE
+  // ---------------------------------------------------------------
+  document.getElementById('form-estoque').addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    const livroId = document.getElementById('s-livro').value;
-    const quantidade = parseInt(document.getElementById('s-quantidade').value, 10);
-    const clienteId = document.getElementById('s-cliente').value || null;
-    const enderecoId = document.getElementById('s-endereco').value || null;
-    if (!livroId || isNaN(quantidade)) return;
-    state.estoque.push({ id: nextId(state.estoque), livroId, quantidade, clienteId, enderecoId });
-    ev.target.reset();
-    document.getElementById('s-quantidade').value = 0;
-    renderAll();
-    flash('fb-estoque');
+    const payload = {
+      livro_id: Number(document.getElementById('s-livro').value),
+      quantidade: parseInt(document.getElementById('s-quantidade').value, 10),
+      cliente_id: document.getElementById('s-cliente').value
+        ? Number(document.getElementById('s-cliente').value)
+        : null,
+      endereco_id: null, // endereço ainda não existe no backend
+    };
+    if (!payload.livro_id || isNaN(payload.quantidade)) return;
+    try {
+      await api('/estoque', { method: 'POST', body: JSON.stringify(payload) });
+      ev.target.reset();
+      document.getElementById('s-quantidade').value = 0;
+      flash('fb-estoque', 'Estoque atualizado com sucesso.');
+      await carregarEstoque();
+    } catch (err) {
+      flash('fb-estoque', `Erro ao lançar: ${err.message}`, 'err');
+    }
   });
 
-  renderAll();
+  // ---------------------------------------------------------------
+  // Exclusões (delegação de evento nas tabelas)
+  // ---------------------------------------------------------------
+  document.addEventListener('click', async (ev) => {
+    const btn = ev.target.closest('button[data-acao]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+
+    const acoes = {
+      'excluir-genero': { path: `/generos/${id}`, reload: carregarGeneros },
+      'excluir-livro': { path: `/livros/${id}`, reload: carregarLivros },
+      'excluir-cliente': { path: `/clientes/${id}`, reload: carregarClientes },
+      'excluir-estoque': { path: `/estoque/${id}`, reload: carregarEstoque },
+    };
+
+    const acao = acoes[btn.dataset.acao];
+    if (!acao) return;
+
+    if (!confirm('Tem certeza que deseja excluir este registro?')) return;
+
+    try {
+      await api(acao.path, { method: 'DELETE' });
+      await acao.reload();
+    } catch (err) {
+      alert(`Não foi possível excluir: ${err.message}`);
+    }
+  });
+
+  // ---------------------------------------------------------------
+  // Carga inicial
+  // ---------------------------------------------------------------
+  async function carregarTudo(){
+    await checarApi();
+    await carregarGeneros();
+    await carregarLivros();
+    await carregarClientes();
+    await carregarEstoque();
+    renderEnderecos();
+  }
+
+  carregarTudo();
 </script>
 
 </body>

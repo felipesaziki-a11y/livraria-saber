@@ -2,14 +2,14 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Categoria:
+class Genero:
     id: int
     nome: str
 
 @dataclass
-class CategoriaCadastro:
+class GeneroCadastro:
     nome: str
 
 @dataclass
-class CategoriaEditar:
+class GeneroEditar:
     nome: str
