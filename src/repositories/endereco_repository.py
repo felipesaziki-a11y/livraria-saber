@@ -7,35 +7,73 @@ from src.schemas.endereco import Endereco, EnderecoCadastro
 def consultar_todos() -> List[Endereco]:
     with conectar() as conexao:
         with conexao.cursor(dictionary=True) as cursor:
-            cursor.execute("SELECT id, rua, bairro, cidade, estado, cliente_id FROM enderecos")
+            cursor.execute("""
+                SELECT 
+                    enderecos.id,
+                    enderecos.rua,
+                    enderecos.bairro,
+                    enderecos.cidade,
+                    enderecos.estado,
+                    enderecos.cliente_id
+                FROM enderecos
+                JOIN clientes ON enderecos.cliente_id = clientes.id;
+            """)
+
             registros = cursor.fetchall()
 
     enderecos = []
+
     for registro in registros:
-        endereco = endereco(
+        endereco = Endereco(
             id=registro["id"],
             rua=registro["rua"],
             bairro=registro["bairro"],
             cidade=registro["cidade"],
             estado=registro["estado"],
-            cliente_id=registro["cliente"]
+            cliente_id=registro["cliente_id"]
         )
+
         enderecos.append(endereco)
+
     return enderecos
 
 
 def cadastrar(endereco: EnderecoCadastro) -> Endereco:
-    sql = "ERT INTO enderecos (rua, bairro, cbairro, estado, cliente_id) VALUE (%s, %s, %s, %s, %s)"
+    sql = """
+        INSERT INTO enderecos
+        (rua, bairro, cidade, estado, cliente_id)
+        VALUES (%s, %s, %s, %s, %s)
+    """
+
     with conectar() as conexao:
         with conexao.cursor() as cursor:
-            cursor.execute(sql, (endereco.rua, endereco.bairro, endereco.cidade, endereco.estado, endereco.cliente_id))
+            cursor.execute(
+                sql,
+                (
+                    endereco.rua,
+                    endereco.bairro,
+                    endereco.cidade,
+                    endereco.estado,
+                    endereco.cliente_id
+                )
+            )
+
             novo_id = cursor.lastrowid
             conexao.commit()
-    return endereco(id=novo_id, rua=endereco.rua, bairro=endereco.bairro, cidade=endereco.cidade)
+
+    return Endereco(
+        id=novo_id,
+        rua=endereco.rua,
+        bairro=endereco.bairro,
+        cidade=endereco.cidade,
+        estado=endereco.estado,
+        cliente_id=endereco.cliente_id
+    )
 
 
 def apagar(id: int):
     sql = "DELETE FROM enderecos WHERE id = %s;"
+
     with conectar() as conexao:
         with conexao.cursor() as cursor:
             cursor.execute(sql, (id,))
@@ -43,7 +81,18 @@ def apagar(id: int):
 
 
 def consultar_por_id(id: int) -> Optional[Endereco]:
-    sql = "SELECT id, rua, bairro, cidade, estado, cliente_id FROM enderecos WHERE id = %s;"
+    sql = """
+        SELECT
+            id,
+            rua,
+            bairro,
+            cidade,
+            estado,
+            cliente_id
+        FROM enderecos
+        WHERE id = %s;
+    """
+
     with conectar() as conexao:
         with conexao.cursor(dictionary=True) as cursor:
             cursor.execute(sql, (id,))
@@ -56,15 +105,45 @@ def consultar_por_id(id: int) -> Optional[Endereco]:
             bairro=registro["bairro"],
             cidade=registro["cidade"],
             estado=registro["estado"],
-            cliente_id=registro["cliente"]
+            cliente_id=registro["cliente_id"]
         )
+
     return None
 
 
 def editar(id: int, endereco: EnderecoCadastro) -> Optional[Endereco]:
-    sql = "UPDATE enderecos SET rua = %s, bairro = %s, cidade = %s, estado = %s, cliente_id = %s WHERE id = %s;"
+    sql = """
+        UPDATE enderecos
+        SET
+            rua = %s,
+            bairro = %s,
+            cidade = %s,
+            estado = %s,
+            cliente_id = %s
+        WHERE id = %s;
+    """
+
     with conectar() as conexao:
         with conexao.cursor() as cursor:
-            cursor.execute(sql, (endereco.rua, endereco.bairro, endereco.cidade, id))
+            cursor.execute(
+                sql,
+                (
+                    endereco.rua,
+                    endereco.bairro,
+                    endereco.cidade,
+                    endereco.estado,
+                    endereco.cliente_id,
+                    id
+                )
+            )
+
             conexao.commit()
-    return endereco(id=id, rua=endereco.rua, bairro=endereco.bairro, cidade=endereco.cidade, estado=endereco.estado, cliente_id=endereco.cliente_id)
+
+    return Endereco(
+        id=id,
+        rua=endereco.rua,
+        bairro=endereco.bairro,
+        cidade=endereco.cidade,
+        estado=endereco.estado,
+        cliente_id=endereco.cliente_id
+    )

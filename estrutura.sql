@@ -74,7 +74,7 @@ SELECT
     clientes.nome AS 'nome do cliente'
 FROM enderecos
 JOIN clientes ON enderecos.cliente_id = clientes.id;
-
+    
 CREATE TABLE estoque(
     id INT PRIMARY KEY AUTO_INCREMENT,
     livro_id INT NOT NULL,
