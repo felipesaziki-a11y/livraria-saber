@@ -74,3 +74,35 @@ SELECT
     clientes.nome AS 'nome do cliente'
 FROM enderecos
 JOIN clientes ON enderecos.cliente_id = clientes.id;
+
+CREATE TABLE estoque(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    livro_id INT NOT NULL,
+    quantidade INT NOT NULL DEFAULT 0,
+    cliente_id INT,
+    endereco_id INT,
+    FOREIGN KEY (livro_id) REFERENCES livros(id),
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (endereco_id) REFERENCES enderecos(id)
+);
+
+SELECT 
+    estoque.id,
+    livros.nome AS livro,
+    generos.nome AS genero,
+    estoque.quantidade,
+    clientes.nome AS cliente,
+    enderecos.cidade,
+    enderecos.estado
+FROM estoque
+JOIN livros ON estoque.livro_id = livros.id
+JOIN generos ON livros.genero_id = generos.id
+LEFT JOIN clientes ON estoque.cliente_id = clientes.id
+LEFT JOIN enderecos ON estoque.endereco_id = enderecos.id;
+
+INSERT INTO estoque (livro_id, quantidade, cliente_id, endereco_id) 
+VALUES (1, 15, NULL, NULL);
+
+INSERT INTO estoque (livro_id, quantidade, cliente_id, endereco_id) 
+VALUES (1, 1, 1, 1);
+
