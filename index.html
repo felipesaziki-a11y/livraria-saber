@@ -636,12 +636,6 @@
       <h1 class="page-title">Endereços</h1>
       <p class="page-lede">Endereços de entrega vinculados a um cliente já cadastrado.</p>
 
-      <div class="notice">
-        A API ainda não tem um endpoint para endereços. Os cadastros feitos aqui ficam
-        salvos apenas nesta página (em memória) e são perdidos ao recarregar — assim que
-        o CRUD de endereços existir no backend, essa seção passa a gravar de verdade.
-      </div>
-
       <div class="panel">
         <h2>Novo endereço</h2>
         <p class="sub">Vincule o endereço a um cliente existente.</p>
@@ -668,7 +662,7 @@
           </div>
           <div class="feedback" id="fb-endereco"></div>
           <div class="form-actions">
-            <button type="submit" class="submit">Cadastrar endereço (local)</button>
+            <button type="submit" class="submit">Cadastrar endereço</button>
           </div>
         </form>
       </div>
@@ -676,7 +670,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>ID</th><th>Rua</th><th>Bairro</th><th>Cidade</th><th>UF</th><th>Cliente</th></tr>
+            <tr><th>ID</th><th>Rua</th><th>Bairro</th><th>Cidade</th><th>UF</th><th>Cliente</th><th></th></tr>
           </thead>
           <tbody id="tabela-enderecos"></tbody>
         </table>
@@ -749,7 +743,7 @@
             </select>
           </div>
           <div class="field">
-            <label for="s-endereco">Endereço <span class="hint">(opcional, local)</span></label>
+            <label for="s-endereco">Endereço <span class="hint">(opcional)</span></label>
             <select id="s-endereco">
               <option value="">Nenhum</option>
             </select>
@@ -764,7 +758,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>ID</th><th>Livro</th><th>Gênero</th><th>Quantidade</th><th>Cliente</th><th></th></tr>
+            <tr><th>ID</th><th>Livro</th><th>Gênero</th><th>Quantidade</th><th>Cliente</th><th>Cidade/UF</th><th></th></tr>
           </thead>
           <tbody id="tabela-estoque"></tbody>
         </table>
@@ -781,18 +775,13 @@
   // Troque pela URL/porta real do seu backend caso seja diferente.
   const API_URL = 'http://127.0.0.1:8000';
 
-  // Dados que ainda não têm endpoint no backend (endereços) ficam
-  // só em memória, no navegador.
-  const local = {
-    enderecos: [],
-  };
-
   // Cache local dos dados vindos da API, usado para montar os
   // <select> e as tabelas sem precisar buscar tudo de novo.
   const cache = {
     generos: [],
     livros: [],
     clientes: [],
+    enderecos: [],
     estoque: [],
   };
 
@@ -882,7 +871,7 @@
     fillSelect(document.getElementById('s-cliente'), cache.clientes, c => c.nome, 'Nenhum');
     fillSelect(
       document.getElementById('s-endereco'),
-      local.enderecos,
+      cache.enderecos,
       e => `${e.rua}, ${e.cidade}/${e.estado}`,
       'Nenhum'
     );
@@ -984,20 +973,32 @@
   }
 
   // ---------------------------------------------------------------
-  // ENDEREÇOS (ainda local, sem backend)
+  // Carregar e renderizar: ENDEREÇOS
   // ---------------------------------------------------------------
+  async function carregarEnderecos(){
+    setLoading('tabela-enderecos', 7);
+    try {
+      cache.enderecos = await api('/enderecos');
+      renderEnderecos();
+    } catch (err) {
+      setError('tabela-enderecos', 7, err.message);
+    }
+    refreshSelects();
+  }
+
   function renderEnderecos(){
     const tbody = document.getElementById('tabela-enderecos');
-    if (!local.enderecos.length){
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-note">Nenhum endereço cadastrado ainda nesta sessão.</td></tr>';
+    if (!cache.enderecos.length){
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-note">Nenhum endereço cadastrado ainda.</td></tr>';
       return;
     }
-    tbody.innerHTML = local.enderecos.map(e => {
-      const cliente = cache.clientes.find(c => c.id === Number(e.clienteId));
+    tbody.innerHTML = cache.enderecos.map(e => {
+      const cliente = cache.clientes.find(c => c.id === e.cliente_id);
       return `
         <tr>
           <td>${e.id}</td><td>${e.rua}</td><td>${e.bairro}</td><td>${e.cidade}</td>
           <td>${e.estado}</td><td>${cliente ? cliente.nome : '—'}</td>
+          <td><button class="btn-icon" data-acao="excluir-endereco" data-id="${e.id}">Excluir</button></td>
         </tr>`;
     }).join('');
   }
@@ -1006,12 +1007,12 @@
   // Carregar e renderizar: ESTOQUE
   // ---------------------------------------------------------------
   async function carregarEstoque(){
-    setLoading('tabela-estoque', 6);
+    setLoading('tabela-estoque', 7);
     try {
       cache.estoque = await api('/estoque');
       renderEstoque();
     } catch (err) {
-      setError('tabela-estoque', 6, err.message);
+      setError('tabela-estoque', 7, err.message);
     }
     renderStats();
   }
@@ -1019,13 +1020,14 @@
   function renderEstoque(){
     const tbody = document.getElementById('tabela-estoque');
     if (!cache.estoque.length){
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-note">Nenhum item em estoque ainda.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-note">Nenhum item em estoque ainda.</td></tr>';
       return;
     }
     tbody.innerHTML = cache.estoque.map(s => {
       const livro = cache.livros.find(l => l.id === s.livro_id);
       const genero = livro ? cache.generos.find(g => g.id === livro.genero_id) : null;
       const cliente = cache.clientes.find(c => c.id === s.cliente_id);
+      const endereco = cache.enderecos.find(e => e.id === s.endereco_id);
       return `
         <tr>
           <td>${s.id}</td>
@@ -1033,6 +1035,7 @@
           <td>${genero ? genero.nome : '—'}</td>
           <td>${s.quantidade}</td>
           <td>${cliente ? cliente.nome : '—'}</td>
+          <td>${endereco ? `${endereco.cidade}/${endereco.estado}` : '—'}</td>
           <td><button class="btn-icon" data-acao="excluir-estoque" data-id="${s.id}">Excluir</button></td>
         </tr>`;
     }).join('');
@@ -1128,25 +1131,26 @@
   });
 
   // ---------------------------------------------------------------
-  // Handler de formulário — ENDEREÇO (local, sem backend)
+  // Handler de formulário — ENDEREÇO
   // ---------------------------------------------------------------
-  document.getElementById('form-endereco').addEventListener('submit', (ev) => {
+  document.getElementById('form-endereco').addEventListener('submit', async (ev) => {
     ev.preventDefault();
-    const rua = document.getElementById('e-rua').value.trim();
-    const bairro = document.getElementById('e-bairro').value.trim();
-    const cidade = document.getElementById('e-cidade').value.trim();
-    const estado = document.getElementById('e-estado').value.trim().toUpperCase();
-    const clienteId = document.getElementById('e-cliente').value;
-    if (!rua || !bairro || !cidade || !estado || !clienteId) return;
-
-    const novoId = local.enderecos.length
-      ? Math.max(...local.enderecos.map(e => e.id)) + 1
-      : 1;
-    local.enderecos.push({ id: novoId, rua, bairro, cidade, estado, clienteId });
-    ev.target.reset();
-    flash('fb-endereco', 'Endereço cadastrado localmente (backend ainda não existe).');
-    renderEnderecos();
-    refreshSelects();
+    const payload = {
+      rua: document.getElementById('e-rua').value.trim(),
+      bairro: document.getElementById('e-bairro').value.trim(),
+      cidade: document.getElementById('e-cidade').value.trim(),
+      estado: document.getElementById('e-estado').value.trim().toUpperCase(),
+      cliente_id: Number(document.getElementById('e-cliente').value),
+    };
+    if (!payload.rua || !payload.bairro || !payload.cidade || !payload.estado || !payload.cliente_id) return;
+    try {
+      await api('/enderecos', { method: 'POST', body: JSON.stringify(payload) });
+      ev.target.reset();
+      flash('fb-endereco', 'Endereço cadastrado com sucesso.');
+      await carregarEnderecos();
+    } catch (err) {
+      flash('fb-endereco', `Erro ao cadastrar: ${err.message}`, 'err');
+    }
   });
 
   // ---------------------------------------------------------------
@@ -1160,7 +1164,9 @@
       cliente_id: document.getElementById('s-cliente').value
         ? Number(document.getElementById('s-cliente').value)
         : null,
-      endereco_id: null, // endereço ainda não existe no backend
+      endereco_id: document.getElementById('s-endereco').value
+        ? Number(document.getElementById('s-endereco').value)
+        : null,
     };
     if (!payload.livro_id || isNaN(payload.quantidade)) return;
     try {
@@ -1186,6 +1192,7 @@
       'excluir-genero': { path: `/generos/${id}`, reload: carregarGeneros },
       'excluir-livro': { path: `/livros/${id}`, reload: carregarLivros },
       'excluir-cliente': { path: `/clientes/${id}`, reload: carregarClientes },
+      'excluir-endereco': { path: `/enderecos/${id}`, reload: carregarEnderecos },
       'excluir-estoque': { path: `/estoque/${id}`, reload: carregarEstoque },
     };
 
@@ -1210,8 +1217,8 @@
     await carregarGeneros();
     await carregarLivros();
     await carregarClientes();
+    await carregarEnderecos();
     await carregarEstoque();
-    renderEnderecos();
   }
 
   carregarTudo();

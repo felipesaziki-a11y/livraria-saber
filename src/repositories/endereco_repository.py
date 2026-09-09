@@ -9,14 +9,13 @@ def consultar_todos() -> List[Endereco]:
         with conexao.cursor(dictionary=True) as cursor:
             cursor.execute("""
                 SELECT 
-                    enderecos.id,
-                    enderecos.rua,
-                    enderecos.bairro,
-                    enderecos.cidade,
-                    enderecos.estado,
-                    enderecos.cliente_id
-                FROM enderecos
-                JOIN clientes ON enderecos.cliente_id = clientes.id;
+                    id,
+                    rua,
+                    bairro,
+                    cidade,
+                    estado,
+                    cliente_id
+                FROM enderecos;
             """)
 
             registros = cursor.fetchall()
